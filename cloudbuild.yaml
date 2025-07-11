@@ -1,0 +1,53 @@
+steps:
+  # =============================================================================
+  # == STEP 1: DEPLOY THE AGENT
+  # =============================================================================
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    id: "Deploy to Vertex AI Agent Engine"
+    env:
+      - "GOOGLE_GENAI_USE_VERTEXAI=TRUE"
+      - "GOOGLE_CLOUD_PROJECT=${PROJECT_ID}"
+      - "GOOGLE_CLOUD_LOCATION=${_LOCATION}"
+      - "MODEL=gemini-1.5-flash-001"
+      - "APP_NAME=Transcript Summarizer"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        set -ex
+        apt-get update && apt-get install -y python3.11-venv
+        python3 -m venv venv
+        ./venv/bin/pip install -r requirements.txt
+        echo "--- Starting Python SDK deployment script ---"
+        # Run deploy script and save its output to a file in the shared workspace
+        ./venv/bin/python deploy.py | tee /workspace/deploy_output.txt
+        # Extract the agent resource name (the last word on the last line)
+        # and save it to a file for the next step to use.
+        tail -n 1 /workspace/deploy_output.txt | awk '{print $$NF}' > /workspace/agent_resource_name.txt
+
+  # =============================================================================
+  # == STEP 2: TEST THE DEPLOYED AGENT
+  # =============================================================================
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    id: "Test Deployed Agent"
+    env:
+      - "GOOGLE_CLOUD_PROJECT=${PROJECT_ID}"
+      - "GOOGLE_CLOUD_LOCATION=${_LOCATION}"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        set -ex
+        apt-get update && apt-get install -y python3.11-venv
+        python3 -m venv venv
+        ./venv/bin/pip install -r requirements.txt
+        echo "--- Preparing to run test script ---"
+        # Read the resource name saved by the previous step into an env variable
+        export AGENT_RESOURCE_NAME=$(cat /workspace/agent_resource_name.txt)
+        # Run the test script (it will get AGENT_RESOURCE_NAME from the environment)
+        ./venv/bin/python test_agent_engine.py
+
+# --- Substitutions for variables ---
+substitutions:
+  _LOCATION: "us-central1"
+  # _STAGING_BUCKET: "gs://agent-artifact-bucket"

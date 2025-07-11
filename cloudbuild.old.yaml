@@ -1,0 +1,44 @@
+# cloudbuild.yaml
+steps:
+  # =============================================================================
+  # == DEPLOY TO VERTEX AI AGENT ENGINE (using adk deploy agent_engine)
+  # =============================================================================
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    id: "Deploy Summarizer to Agent Engine"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        # Exit on error and print each command
+        set -ex
+
+        # Install system and python dependencies
+        apt-get update && apt-get install -y python3.11-venv
+        python3 -m venv venv
+        ./venv/bin/pip install -r requirements.txt
+
+        # --- ✅ VERIFICATION STEP ---
+        echo "--- Verifying 'google-adk' installation ---"
+        ./venv/bin/pip freeze | grep google-adk
+
+        # Run the deployment command with the specified format
+        echo "--- Starting ADK deployment to Agent Engine ---"
+        ./venv/bin/adk deploy agent_engine \
+          --project ${PROJECT_ID} \
+          --region ${_LOCATION} \
+          --staging_bucket gs://${_STAGING_BUCKET} \
+          --trace_to_cloud \
+          ./
+
+  # =============================================================================
+  # == OTHER STEPS (Cloud Run, GKE) can follow...
+  # =============================================================================
+  # Note: To be brief, other steps are omitted.
+
+# --- Substitutions for variables ---
+substitutions:
+  _LOCATION: "us-central1" # Corresponds to the --region flag
+  _STAGING_BUCKET: "your-gcs-bucket-for-staging" # Bucket name only
+
+# Specify a timeout for the build
+timeout: "1600s"

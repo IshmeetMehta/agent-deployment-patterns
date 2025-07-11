@@ -1,0 +1,24 @@
+steps:
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    id: "Deploy to Vertex AI Agent Engine"
+    # The 'env' block makes your variables available to the script
+    env:
+      - "GOOGLE_GENAI_USE_VERTEXAI=TRUE"
+      - "GOOGLE_CLOUD_PROJECT=${PROJECT_ID}"
+      - "GOOGLE_CLOUD_LOCATION=${_LOCATION}"
+      - "MODEL=gemini-1.5-flash-001"
+      - "APP_NAME=Transcript Summarizer"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        set -ex
+        apt-get update && apt-get install -y python3.11-venv
+        python3 -m venv venv
+        ./venv/bin/pip install -r requirements.txt
+        echo "--- Starting Python SDK deployment script ---"
+        ./venv/bin/python deploy.py
+
+# --- Substitutions for variables ---
+substitutions:
+  _LOCATION: "us-central1"
