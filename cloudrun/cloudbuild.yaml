@@ -1,0 +1,112 @@
+# This Cloud Build configuration file uses the Google ADK to deploy a Python
+# agent to Cloud Run using the `adk deploy cloud_run` command.
+
+steps:
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    id: "Deploy to Cloud Run"
+    env:
+      - "GOOGLE_GENAI_USE_VERTEXAI=TRUE"
+      - "GOOGLE_CLOUD_PROJECT=${PROJECT_ID}"
+      - "GOOGLE_CLOUD_LOCATION=${_REGION}"
+      - "APP_NAME=${_APP_NAME}"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        set -ex
+        apt-get update && apt-get install -y python3.11-venv
+        python3 -m venv venv
+        ./venv/bin/pip install -r requirements.txt
+        echo "--- Starting ADK deployment to Cloud Run ---"
+
+        # Run the ADK deploy command with the specified format.
+        # It builds the container, pushes it to Artifact Registry,
+        # and deploys the service to Cloud Run.
+        yes | ./venv/bin/adk deploy cloud_run \
+          --project=$PROJECT_ID \
+          --region=$_REGION \
+          --service_name=$_SERVICE_NAME \
+          --app_name=$_APP_NAME \
+          --with_ui \
+          $_AGENT_PATH
+
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    id: "Test Deployed Service"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        set -ex
+        echo "--- Getting Cloud Run service URL ---"
+        # Retrieve the URL of the newly deployed service
+        APP_URL=$$(gcloud run services describe $_SERVICE_NAME --platform managed --region $_REGION --format 'value(status.url)')
+
+        if [ -z "$$APP_URL" ]; then
+          echo "[FAIL] Could not retrieve Cloud Run service URL for $_SERVICE_NAME."
+          exit 1
+        fi
+        echo "Service URL: $$APP_URL"
+
+        # Give the service a few seconds to fully initialize after deployment
+        echo "--- Waiting for service to initialize... ---"
+        sleep 15
+
+        echo "--- Listing available apps ---"
+        # Since the service is public, no Authorization header is needed.
+        # The --fail flag ensures that HTTP errors cause the step to fail.
+        curl --fail -X GET $$APP_URL/list-apps
+        echo # for newline
+
+        echo "--- Creating session with curl ---"
+        # This command creates a session before querying the agent.
+        curl --fail -X POST $$APP_URL/apps/${_APP_NAME}/users/user_ci_cd_test/sessions/session_ci_cd_test \
+            -H "Content-Type: application/json" \
+            -d '{"state": {"source": "cloud-build-test"}}'
+        echo # for newline
+
+        # Add a small delay to allow the session to be processed if needed.
+        sleep 5
+
+        echo "--- Sending test query with curl to $$APP_URL/run_sse ---"
+        # Use curl to send a request and capture the output.
+        # The --fail flag ensures that HTTP errors (like 4xx or 5xx) cause the step to fail.
+        RESPONSE=$$(curl --fail --silent --show-error -X POST \
+          -H "Content-Type: application/json" \
+          -d '{
+            "app_name": "${_APP_NAME}",
+            "user_id": "user_ci_cd_test",
+            "session_id": "session_ci_cd_test",
+            "new_message": {
+              "role": "user",
+              "parts": [{
+                "text": "User: Hi, I need to check the status of my order, number 12345. Agent: I can help with that. One moment. Agent: I see that order 12345 has been shipped and is scheduled for delivery tomorrow. User: Excellent, thank you!"
+              }]
+            },
+            "streaming": false
+          }' \
+          $$APP_URL/run_sse)
+
+        echo "--- Agent Response ---"
+        echo "$$RESPONSE"
+        echo "----------------------"
+
+        # Check if the response is empty. A successful, non-streaming response should contain data.
+        if [ -z "$$RESPONSE" ]; then
+          echo "[FAIL] Test failed: Received an empty response from the agent."
+          exit 1
+        fi
+
+        echo "[SUCCESS] Test passed: Received a valid, non-empty response from the agent."
+
+# User-defined substitutions.
+# You can override these values when submitting the build.
+substitutions:
+  _REGION: "us-central1"
+  _SERVICE_NAME: "transcript-summarizer-service"
+  # The path to the Python file and FastAPI app variable.
+  _APP_NAME: "transcript_summarizer"
+  # The path to the directory containing your agent definition.
+  _AGENT_PATH: "transcript_summarizer"
+
+options:
+  logging: CLOUD_LOGGING_ONLY

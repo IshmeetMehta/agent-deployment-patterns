@@ -1,0 +1,74 @@
+# 2. Service
+# This exposes the agent deployment within the cluster via an external Load Balancer.
+apiVersion: v1
+kind: Service
+metadata:
+  name: transcript-summarizer-service
+spec:
+  type: LoadBalancer # Expose the service externally
+  selector:
+    app: transcript-summarizer # This must match the 'app' label in the Deployment
+  ports:
+    - protocol: TCP
+      port: 80 # The port the service is available on
+      targetPort: 8080 # The port your container is listening on
+---
+# 3. Deployment
+# This runs the agent container as a pod in the GKE cluster.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transcript-summarizer-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transcript-summarizer
+  template:
+    metadata:
+      labels:
+        app: transcript-summarizer
+    spec:
+      serviceAccountName: agent-ksa # Use the KSA defined above
+      containers:
+        - name: agent-container
+          image: _IMAGE_ # Placeholder for the container image
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"
+            - name: GOOGLE_CLOUD_PROJECT
+              value: "_PROJECT_ID_" # Placeholder for Project ID
+            - name: GOOGLE_CLOUD_LOCATION
+              value: "_LOCATION_" # Placeholder for Location/Region
+            - name: GOOGLE_GENAI_USE_VERTEXAI
+              value: "true"
+          # If using AI Studio, set GOOGLE_GENAI_USE_VERTEXAI to false and set the following:
+          # - name: GOOGLE_API_KEY
+          #   value: YOUR_API_KEY
+          # Add any other necessary environment variables your agent might need
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+              ephemeral-storage: "128Mi"
+            requests:
+              memory: "128Mi"
+              cpu: "500m"
+              ephemeral-storage: "128Mi"
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 2
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 2

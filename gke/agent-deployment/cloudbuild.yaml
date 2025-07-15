@@ -1,0 +1,138 @@
+steps:
+  # =============================================================================
+  # == STEP 1: Build the Docker image
+  # =============================================================================
+  - name: "gcr.io/cloud-builders/docker"
+    id: "Build Image"
+    args:
+      - "build"
+      - "-t"
+      - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/${_IMAGE_NAME}:${_TAG}"
+      - "."
+
+  # =============================================================================
+  # == STEP 2: Push the Docker image to Artifact Registry
+  # =============================================================================
+  - name: "gcr.io/cloud-builders/docker"
+    id: "Push Image"
+    args:
+      - "push"
+      - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/${_IMAGE_NAME}:${_TAG}"
+
+  # =============================================================================
+  # == STEP 3: Deploy to GKE
+  # =============================================================================
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    id: "Deploy to GKE"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        set -ex
+
+        # Get the GKE cluster credentials
+        gcloud container clusters get-credentials "${_GKE_CLUSTER_NAME}" --region "${_GKE_LOCATION}"
+
+        # Substitute placeholders in the deployment manifest
+        IMAGE_PATH="${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/${_IMAGE_NAME}:${_TAG}"
+        sed -i "s#_IMAGE_#$${IMAGE_PATH}#g" deployment.yaml
+        sed -i "s/_PROJECT_ID_/${PROJECT_ID}/g" deployment.yaml
+        sed -i "s/_LOCATION_/${_GKE_LOCATION}/g" deployment.yaml
+
+        # Delete existing resources defined in the manifest to ensure a clean apply.
+        # The --ignore-not-found flag prevents errors if resources don't exist on the first run.
+        kubectl delete -f deployment.yaml --ignore-not-found=true
+
+        echo "--- Applying Kubernetes manifest: ---"
+        cat deployment.yaml
+        echo "------------------------------------"
+
+        # Apply the manifest to the cluster
+        kubectl apply -f deployment.yaml
+
+  # =============================================================================
+  # == STEP 4: Test the Deployed Agent on GKE
+  # =============================================================================
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    id: "Test Deployed Agent"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        set -ex
+
+        # Get GKE cluster credentials
+        gcloud container clusters get-credentials "${_GKE_CLUSTER_NAME}" --region "${_GKE_LOCATION}"
+
+        # Wait for the deployment to be fully rolled out and available
+        echo "--- Waiting for deployment to become available... ---"
+        kubectl wait --for=condition=available --timeout=300s deployment/transcript-summarizer-deployment
+
+        # Wait for the LoadBalancer service to get an external IP address
+        echo "--- Waiting for LoadBalancer to get an external IP... ---"
+        EXTERNAL_IP=""
+        for i in {1..30}; do # 30 attempts, 10 seconds apart = 5 minutes timeout
+          EXTERNAL_IP=$$(kubectl get service transcript-summarizer-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          if [ -n "$$EXTERNAL_IP" ]; then
+            echo "LoadBalancer IP found: $$EXTERNAL_IP"
+            break
+          fi
+          echo "Waiting for external IP... (attempt $$i/30)"
+          sleep 10
+        done
+
+        if [ -z "$$EXTERNAL_IP" ]; then
+          echo "[FAIL] Timed out waiting for LoadBalancer external IP."
+          kubectl get service transcript-summarizer-service -o yaml # Print service status for debugging
+          exit 1
+        fi
+
+        APP_URL="http://$$EXTERNAL_IP"
+
+        echo "--- Creating session with curl ---"
+        # This command attempts to create a session before querying the agent.
+        curl -X POST $$APP_URL/apps/transcript_summarizer/users/user_123/sessions/session_abc \
+            -H "Content-Type: application/json" \
+            -d '{"state": {"preferred_language": "English", "visit_count": 5}}'
+
+        # Add a small delay to allow the session to be processed if needed.
+        sleep 5
+
+        echo "--- Sending test query with curl to $$APP_URL/run_sse ---"
+        # Use curl to send a request and capture the output. The --fail flag ensures that HTTP errors cause the step to fail.
+        RESPONSE=$$(curl --fail --silent --show-error -X POST \
+          -H "Content-Type: application/json" \
+          -d '{
+            "app_name": "transcript_summarizer",
+            "user_id": "user_123",
+            "session_id": "session_abc",
+            "new_message": {
+              "role": "user",
+              "parts": [{
+                "text": "User: Hi, I need to check the status of my order, number 12345. Agent: I can help with that. One moment. Agent: I see that order 12345 has been shipped and is scheduled for delivery tomorrow. User: Excellent, thank you!"
+              }]
+            },                
+            "streaming": false
+          }' \
+          $$APP_URL/run_sse)
+
+        echo "--- Agent Response ---"
+        echo "$$RESPONSE"
+        echo "----------------------"
+
+        # Check if the response is empty. A successful, non-streaming response should contain data.
+        if [ -z "$$RESPONSE" ]; then
+          echo "[FAIL] Test failed: Received an empty response from the agent."
+          exit 1
+        fi
+
+        echo "[SUCCESS] Test passed: Received a valid, non-empty response from the agent."
+
+# --- Substitutions for variables ---
+substitutions:
+  _GKE_CLUSTER_NAME: "agent-deployment-cluster" # Must match the cluster name in terraform
+  _GKE_LOCATION: "us-central1" # Must match the region in terraform
+  _REGION: "us-central1" # The region for your Artifact Registry repo
+  _AR_REPO_NAME: "agent-images" # The name of your Artifact Registry repository
+  _IMAGE_NAME: "transcript-summarizer"
+  _TAG: "latest" # Default tag for manual builds. Override with $COMMIT_SHA or $SHORT_SHA for CI triggers.
