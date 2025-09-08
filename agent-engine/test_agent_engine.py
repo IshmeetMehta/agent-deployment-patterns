@@ -23,13 +23,13 @@ def test_summarization_agent():
     print(f"Agent Resource Name: {AGENT_RESOURCE_NAME}")
     print("-" * 28)
 
-    # 1. Ensure all required environment variables are set
+    # Ensure all required environment variables are set
     if not all([PROJECT_ID, LOCATION, AGENT_RESOURCE_NAME]):
         print("\nError: GOOGLE_CLOUD_PROJECT, GOOGLE_CLOUD_LOCATION, and AGENT_RESOURCE_NAME environment variables must be set.", file=sys.stderr)
         sys.exit(1)
 
     try:
-        # 2. Initialize the Vertex AI SDK
+        # Initialize the Vertex AI SDK
         vertexai.init(project=PROJECT_ID, location=LOCATION)
 
         print(f"\n--- Getting remote agent: {AGENT_RESOURCE_NAME} ---")
@@ -51,7 +51,7 @@ def test_summarization_agent():
         """
 
         print("\n--- Sending transcript to the agent for summarization... ---")
-        # 3. Stream the query and handle the response
+        # Stream the query and handle the response
         print("\nSending transcript to the agent for summarization...")
         for event in remote_agent.stream_query(
             user_id=user_id,
@@ -69,7 +69,7 @@ def test_summarization_agent():
         print("--- Test Succeeded ---")
         print("-" * 50)
 
-    # 4. Add specific error handling for common issues
+    # Add specific error handling for common issues
     except exceptions.PermissionDenied as e:
         print(f"\n[ERROR] Permission Denied: The service account does not have the required 'aiplatform.endpoints.predict' permission.", file=sys.stderr)
         print("Please grant the 'Vertex AI User' role (roles/aiplatform.user) to the principal running this script.", file=sys.stderr)

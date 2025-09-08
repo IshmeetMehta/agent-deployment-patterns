@@ -39,13 +39,13 @@ def deploy_agent():
     print(f"Staging Bucket: {STAGING_BUCKET_NAME}")
     print(f"App Name: {APP_NAME}")
     
-    # 1. Validate environment configuration
+    # Validate environment configuration
     if not all([PROJECT_ID, LOCATION]):
         print("\n[ERROR] GOOGLE_CLOUD_PROJECT and GOOGLE_CLOUD_LOCATION environment variables must be set.", file=sys.stderr)
         sys.exit(1)
 
     try:
-        # 2. Initialize Vertex AI SDK with the required staging bucket
+        # Initialize Vertex AI SDK with the required staging bucket
         print("\n[TRACE] Initializing Vertex AI SDK...")
         vertexai.init(
             project=PROJECT_ID,
@@ -54,7 +54,7 @@ def deploy_agent():
         )
         print("[TRACE] SDK Initialized.")
 
-        # 3. Create the AdkApp object
+        # Create the AdkApp object
         # This is the modern way to package your agent for both local testing and deployment.
         print("[TRACE] Creating AdkApp object...")
         adk_app = reasoning_engines.AdkApp(
@@ -63,7 +63,7 @@ def deploy_agent():
         )
         print("[TRACE] AdkApp object created.")
 
-        # 4. Deploy the AdkApp to Agent Engine
+        # Deploy the AdkApp to Agent Engine
         print(f"\n[TRACE] Deploying agent '{APP_NAME}'...")
         remote_app = agent_engines.create(
             adk_app,
@@ -71,7 +71,7 @@ def deploy_agent():
             requirements=AGENT_REQUIREMENTS,
         )
 
-        # 5. Print the resource name for use in CI/CD pipelines
+        # Print the resource name for use in CI/CD pipelines
         resource_name = remote_app.resource_name
         print("\n" + "="*50)
         print("--- ✅ Deployment Succeeded! ---")
@@ -83,7 +83,7 @@ def deploy_agent():
             f.write(resource_name)
         print("Resource name also saved to agent_resource_name.txt")
 
-    # 6. Handle common deployment errors
+    # Handle common deployment errors
     except exceptions.PermissionDenied as e:
         print("\n[ERROR] Permission Denied. The principal running this script is missing required IAM roles.", file=sys.stderr)
         print("Ensure it has 'Vertex AI User', 'Service Account User', and 'Storage Object Admin'.", file=sys.stderr)
