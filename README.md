@@ -85,7 +85,7 @@ This pattern shows how to containerize your agent and deploy it to a **GKE Autop
     Navigate to the agent deployment directory and submit the Cloud Build job.
     ```sh
     cd ../agent-deployment
-    gcloud builds submit --config cloudbuild.yaml --substitutions=_GKE_CLUSTER=$(terraform output -raw gke_cluster_name),_GKE_LOCATION=$(terraform output -raw gke_cluster_location) .
+    gcloud builds submit --config cloudbuild.yaml --substitutions=_GKE_CLUSTER_NAME=$(terraform output -raw gke_cluster_name),_GKE_LOCATION=$(terraform output -raw gke_cluster_location) .
     ```
     The substitutions pass the cluster name and location from the Terraform output to the build pipeline.
 
