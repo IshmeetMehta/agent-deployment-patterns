@@ -1,0 +1,10 @@
+steps:
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: ['builds', 'submit', '--config=agent-patterns/cloudrun/cloudbuild.yaml', '--substitutions=_REGION=us-central1', 'agent-patterns/cloudrun']
+    id: 'Build Cloud Run Agent'
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: ['builds', 'submit', '--config=agent-patterns/agent-engine/cloudbuild.yaml', '--substitutions=_LOCATION=us-central1', 'agent-patterns/agent-engine']
+    id: 'Build Agent Engine'
+#  - name: 'gcr.io/cloud-builders/gcloud'
+#    args: ['builds', 'submit', '--config=agent-patterns/gke/agent-deployment/cloudbuild.yaml', 'agent-patterns/gke/agent-deployment'] #gcloud builds submit --config cloudbuild.yaml --substitutions=_GKE_CLUSTER_NAME=agent-deployment-cluster,_GKE_LOCATION=us-central1
+#    id: 'Build GKE Agent'

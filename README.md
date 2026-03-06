@@ -33,6 +33,8 @@ This pattern demonstrates how to deploy an agent directly to the managed **Verte
 
 #### Quickstart
 
+**WIP** To run the master cloud build job: `gcloud builds submit --config cloudbuild.yaml` from the root of this repository.
+
 1.  **Navigate to the directory**:
     ```sh
     cd agent-patterns/agent-engine
