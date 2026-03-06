@@ -270,3 +270,4 @@ terraform.rc
 .DS_Store
 Thumbs.db
 *.swp
+terraform/old/*
