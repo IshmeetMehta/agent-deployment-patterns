@@ -40,7 +40,6 @@ pip-delete-this-directory.txt
 htmlcov/
 .tox/
 .nox/
-=======
 *.pyc
 *~
 __pycache__
@@ -72,14 +71,12 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 htmlcov
->>>>>>> 67612ad (add .gitignore)
 .coverage
 .coverage.*
 .cache
 nosetests.xml
 coverage.xml
 *.cover
-<<<<<<< HEAD
 *.py.cover
 .hypothesis/
 .pytest_cache/
@@ -240,7 +237,6 @@ terraform/.terraform/
 terraform/.terraform.lock.hcl
 .terraform/
 .terraform.lock.hcl
-=======
 *.log
 .mypy_cache
 .dmypy.json
@@ -252,14 +248,12 @@ dmypy.json
 *.tfstate.*
 crash.log
 *.tfvars
-<<<<<<< HEAD
 *.tfvars.json
 
 # Marimo
 marimo/_static/
 marimo/_lsp/
 __marimo__/
-=======
 *.terraform.lock.hcl
 override.tf
 override.tf.json
