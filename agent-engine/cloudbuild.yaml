@@ -16,13 +16,13 @@ steps:
       - |
         set -ex
         apt-get update && apt-get install -y python3.11-venv
-        python3 -m venv venv
+        python3.11 -m venv venv
         ./venv/bin/pip install -r requirements.txt
         echo "--- Starting Python SDK deployment script ---"
         # Run the deployment script. The script itself is responsible for
         # creating the /workspace/agent_resource_name.txt file, which
         # makes this pipeline more robust than parsing stdout.
-        ./venv/bin/python deploy.py
+        ./venv/bin/python3.11 deploy.py
 
   # =============================================================================
   # == STEP 2: TEST THE DEPLOYED AGENT
@@ -38,13 +38,13 @@ steps:
       - |
         set -ex
         apt-get update && apt-get install -y python3.11-venv
-        python3 -m venv venv
+        python3.11 -m venv venv
         ./venv/bin/pip install -r requirements.txt
         echo "--- Preparing to run test script ---"
         # Read the resource name saved by the previous step into an env variable
         export AGENT_RESOURCE_NAME=$(cat /workspace/agent_resource_name.txt)
         # Run the test script (it will get AGENT_RESOURCE_NAME from the environment)
-        ./venv/bin/python test_agent_engine.py
+        ./venv/bin/python3.11 test_agent_engine.py
 
 # --- Substitutions for variables ---
 substitutions:
