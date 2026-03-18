@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: ${DOCKER_IMAGE_NAME}-service-clusterip
-  namespace: ${NAMESPACE_NAME}
+  namespace: ${APP_NAME}
   labels:
     app: ${DOCKER_IMAGE_NAME}
 spec:
@@ -18,7 +18,7 @@ apiVersion: gateway.networking.k8s.io/v1beta1
 kind: Gateway
 metadata:
   name: ${APP_NAME}-gateway
-  namespace: ${NAMESPACE_NAME}
+  namespace: ${APP_NAME}
 spec:
   gatewayClassName: gke-l7-global-external-managed # Or another GatewayClass based on your cluster setup
   listeners:
@@ -33,7 +33,7 @@ apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
 metadata:
   name: ${APP_NAME}-http-route
-  namespace: ${NAMESPACE_NAME}
+  namespace: ${APP_NAME}
 spec:
   parentRefs:
   - name: ${APP_NAME}-gateway

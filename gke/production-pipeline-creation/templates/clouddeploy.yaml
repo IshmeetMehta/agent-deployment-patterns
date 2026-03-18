@@ -1,7 +1,7 @@
 apiVersion: deploy.cloud.google.com/v1
 kind: DeliveryPipeline
 metadata:
-  name: ${APP_NAME}-delivery-pipeline
+  name: ${APP_NAME}-pipeline
   labels:
     app: ${APP_NAME}
 spec:
@@ -9,32 +9,17 @@ spec:
   serialPipeline:
     stages:
       - targetId: ${APP_NAME}-dev
-        profiles: ["dev"]
+        strategy:
+          standard:
+            verify: true
       - targetId: ${APP_NAME}-qa
-        profiles: ["qa"]
         strategy:
           standard:
-            predeploy:
-              actions: []
-            postdeploy:
-              actions: []
-            verify: false
-          
+            verify: true
       - targetId: ${APP_NAME}-prod
-        profiles: ["prod"] # Use 'prod' profile for production
         strategy:
           standard:
-            postdeploy:
-              actions: []
-            predeploy:
-              actions: []
             verify: false
-        deployParameters:
-        - values:
-            gke-cluster: projects/${GCP_PROJECT_ID}/locations/${GCP_REGION}/clusters/${GKE_CLUSTER_NAME}
-          matchTargetLabels:
-            environment: prod
-
 ---
 apiVersion: deploy.cloud.google.com/v1
 kind: Target
@@ -46,7 +31,7 @@ metadata:
 spec:
   description: Development environment for ${APP_NAME}
   gke:
-    cluster: projects/${GCP_PROJECT_ID}/locations/${GCP_REGION}/clusters/${GKE_CLUSTER_NAME}
+    cluster: projects/${GCP_PROJECT_ID}/locations/${GCP_REGION}/clusters/${CLUSTER_NAME}-dev
 ---
 apiVersion: deploy.cloud.google.com/v1
 kind: Target
@@ -59,7 +44,7 @@ spec:
   description: QA environment for ${APP_NAME}
   requireApproval: true # Require manual approval for QA
   gke:
-    cluster: projects/${GCP_PROJECT_ID}/locations/${GCP_REGION}/clusters/${GKE_CLUSTER_NAME}
+    cluster: projects/${GCP_PROJECT_ID}/locations/${GCP_REGION}/clusters/${CLUSTER_NAME}-qa
 ---
 apiVersion: deploy.cloud.google.com/v1
 kind: Target
@@ -72,7 +57,7 @@ spec:
   description: Production environment for ${APP_NAME}
   requireApproval: true # Require manual approval for production
   gke:
-    cluster: projects/${GCP_PROJECT_ID}/locations/${GCP_REGION}/clusters/${GKE_CLUSTER_NAME}
+    cluster: projects/${GCP_PROJECT_ID}/locations/${GCP_REGION}/clusters/${CLUSTER_NAME}-prod
 ---
 apiVersion: deploy.cloud.google.com/v1
 kind: Automation

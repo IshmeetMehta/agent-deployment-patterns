@@ -19,7 +19,7 @@ verify:
     name: alpine
     image: alpine
     command: ["/bin/sh"]
-    args: ["-c", "wget ${APP_NAME}.${NAMESPACE_NAME}.svc.cluster.local"]
+    args: ["-c", "wget ${APP_NAME}.${APP_NAME}.svc.cluster.local"]
   executionMode:
     kubernetesCluster: {} # This runs the container in the target GKE cluster
 - name: verify-integration-test
@@ -27,6 +27,6 @@ verify:
     name: alpine-int
     image: alpine
     command: ["/bin/sh"]
-    args: ["-c", "wget ${APP_NAME}.${NAMESPACE_NAME}.svc.cluster.local"]
+    args: ["-c", "wget ${APP_NAME}.${APP_NAME}.svc.cluster.local"]
   executionMode:
     kubernetesCluster: {} # This runs the container in the target GKE cluster
