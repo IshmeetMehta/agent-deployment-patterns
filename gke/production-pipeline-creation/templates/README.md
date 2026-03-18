@@ -2,9 +2,9 @@
 
 This directory contains the base templates for deploying a GKE agent. These templates are designed to be hydrated into static Kubernetes manifest files using common variables.
 
-## Deployment Strategy: Immutable Multi-Cluster
+## Deployment Strategy: Production-Grade Multi-Cluster
 
-We use a **Senior Multi-Cluster Strategy** where the same manifests are promoted across isolated clusters (Dev, QA, Prod). This ensures environment parity and simplifies the deployment lifecycle.
+We use a **Production-Grade Multi-Cluster Strategy** where the same manifests are promoted across isolated clusters (Dev, QA, Prod). This ensures environment parity and simplifies the deployment lifecycle.
 
 ### Key Principles:
 1.  **Shared Namespace:** The Kubernetes Namespace is always `${APP_NAME}` in all clusters.
@@ -13,14 +13,14 @@ We use a **Senior Multi-Cluster Strategy** where the same manifests are promoted
 
 ## Template Files:
 
-*   `01-namespace.yaml`: Defines the namespace for the agent.
-*   `02-ksa.yaml`: Defines the Kubernetes Service Account with Workload Identity annotations.
-*   `03-deployment.yaml`: Defines the core Deployment resource with best practices (probes, resources).
-*   `04-service-lb.yaml`: Defines a LoadBalancer Service for external access.
-*   `service-gateway.yaml`: An alternative template for using Gateway API instead of a LoadBalancer Service.
-*   `cloudbuild.yaml`: The CI pipeline configuration for building and triggering deployments.
-*   `clouddeploy.yaml`: The CD pipeline configuration defining environments and automation rules.
-*   `skaffold.yaml`: The configuration for local development and post-deployment verification.
+*   [01-namespace.yaml](./01-namespace.yaml): Defines the namespace for the agent.
+*   [02-ksa.yaml](./02-ksa.yaml): Defines the Kubernetes Service Account with Workload Identity annotations.
+*   [03-deployment.yaml](./03-deployment.yaml): Defines the core Deployment resource with best practices (probes, resources).
+*   [04-service-lb.yaml](./04-service-lb.yaml): Defines a LoadBalancer Service for external access.
+*   [service-gateway.yaml](./service-gateway.yaml): An alternative template for using Gateway API instead of a LoadBalancer Service.
+*   [cloudbuild.yaml](./cloudbuild.yaml): The CI pipeline configuration for building and triggering deployments.
+*   [clouddeploy.yaml](./clouddeploy.yaml): The CD pipeline configuration defining environments and automation rules.
+*   [skaffold.yaml](./skaffold.yaml): The configuration for local development and post-deployment verification.
 
 ## Hydration Process:
 

@@ -103,7 +103,10 @@ The handoff between build and deployment can be managed in two ways:
         --region="us-central1" \
         --images="agent-image=us-central1-docker.pkg.dev/my-project/repo/image:${_VERSION}"
     ```
-*   **Option 2: Event-Driven (Asynchronous):** This leverages **Google Cloud Eventarc** to monitor **Artifact Registry**. When a new image tag is successfully uploaded, Eventarc automatically triggers the Cloud Deploy pipeline. This approach completely decouples the build lifecycle from the deployment lifecycle, as the CI process has no knowledge of the deployment mechanism.
+*   **Option 2: Event-Driven (Asynchronous):** This leverages **Google Cloud Eventarc** to monitor **Artifact Registry** via Cloud Audit Logs. When a new image tag is successfully uploaded, Eventarc automatically triggers a specialized Cloud Build job to create the release. This approach completely decouples the build lifecycle from the deployment lifecycle.
+
+For a detailed implementation guide on the event-driven strategy, see [event-driven-cd.md](./event-driven-cd.md).
+
 
 ### 4. Continuous Deployment (CD)
 The CD stage manages the lifecycle of the release across GKE environments using **Google Cloud Deploy** and **Skaffold**. This process ensures that every deployment is not only rolled out but also validated before progressing through the pipeline.

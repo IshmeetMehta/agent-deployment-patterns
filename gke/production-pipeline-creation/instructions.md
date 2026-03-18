@@ -22,7 +22,7 @@ ALWAYS request all information below to ensure we deploy to the correct location
 
 ## Deployment Strategy: Multi-Cluster (Standard)
 
-We follow a **Senior Multi-Cluster Strategy**. This ensures your deployment manifests are **immutable** and isolated.
+We follow a **Production-Grade Multi-Cluster Strategy**. This ensures your deployment manifests are **immutable** and isolated.
 -   **Environment Isolation:** 3 separate GKE Autopilot clusters (`${CLUSTER_NAME}-dev`, `${CLUSTER_NAME}-qa`, `${CLUSTER_NAME}-prod`).
 -   **Single Namespace:** The agent is deployed into a namespace named `${APP_NAME}` in all three clusters.
 -   **Manifest Immutability:** The same manifests in `/k8s-manifests` are promoted across environments by Google Cloud Deploy.
@@ -53,7 +53,7 @@ Depending on the user's choice (gcloud/Terraform), generate the corresponding fi
 
 1.  **Root Folder:** Create a root folder for the project.
 2.  **Agent Logic:** Add the agent folder and files (`main.py`, `requirements.txt`, `Dockerfile`).
-3.  **Manifest Generation:** Generate the K8s manifests in `/k8s-manifests` using the provided templates.
-4.  **Pipeline Generation:** Generate `cloudbuild.yaml`, `clouddeploy.yaml`, and `skaffold.yaml` in the root.
+3.  **Manifest Generation:** Generate the K8s manifests in `/k8s-manifests` using the provided [templates/](./templates/).
+4.  **Pipeline Generation:** Generate `cloudbuild.yaml`, `clouddeploy.yaml`, and `skaffold.yaml` in the root using our [templates/](./templates/).
 5.  **Infrastructure Generation:** Generate `deploy.sh` (or Terraform files) in the root.
 6.  **Final Summary:** Provide the user with a summary of the generated files and the commands to start the deployment.
