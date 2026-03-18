@@ -6,7 +6,7 @@ This document outlines the variables used in the generated GKE deployment templa
     *   *Example*: `my-cool-agent`
 
 *   **GCP_PROJECT_ID**: Your Google Cloud Project ID.
-    *   *Current Placeholder Value*: `jgamedemo`
+    *   *Current Placeholder Value*: `my-project-123`
 
 *   **GCP_REGION**: The Google Cloud region where your resources will be deployed (e.g., `us-central1`).
     *   *Current Placeholder Value*: `us-central1`

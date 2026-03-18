@@ -1,0 +1,92 @@
+apiVersion: deploy.cloud.google.com/v1
+kind: DeliveryPipeline
+metadata:
+  name: ${APP_NAME}-pipeline
+  labels:
+    app: ${APP_NAME}
+spec:
+  description: CD pipeline for ${APP_NAME} with Canary Strategy
+  serialPipeline:
+    stages:
+      - targetId: ${APP_NAME}-dev
+        strategy:
+          standard:
+            verify: true
+      - targetId: ${APP_NAME}-qa
+        strategy:
+          standard:
+            verify: true
+      - targetId: ${APP_NAME}-prod
+        strategy:
+          canary:
+            runtimeConfig:
+              kubernetes:
+                gatewayServiceMesh:
+                  httpRoute: ${APP_NAME}-http-route
+                  service: ${APP_NAME}
+            canaryDeployment:
+              percentages: [10, 50]
+              verify: true
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: ${APP_NAME}-dev
+  labels:
+    app: ${APP_NAME}
+    environment: dev
+spec:
+  description: Development environment for ${APP_NAME}
+  gke:
+    cluster: projects/${GCP_PROJECT_ID}/locations/${GCP_REGION}/clusters/${CLUSTER_NAME}-dev
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: ${APP_NAME}-qa
+  labels:
+    app: ${APP_NAME}
+    environment: qa
+spec:
+  description: QA environment for ${APP_NAME}
+  requireApproval: true # Require manual approval for QA
+  gke:
+    cluster: projects/${GCP_PROJECT_ID}/locations/${GCP_REGION}/clusters/${CLUSTER_NAME}-qa
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: ${APP_NAME}-prod
+  labels:
+    app: ${APP_NAME}
+    environment: prod
+spec:
+  description: Production environment for ${APP_NAME}
+  requireApproval: true # Require manual approval for production
+  gke:
+    cluster: projects/${GCP_PROJECT_ID}/locations/${GCP_REGION}/clusters/${CLUSTER_NAME}-prod
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Automation
+metadata:
+  name: ${APP_NAME}-pipeline/rollout-automation
+description: Automates promotion of successful rollouts and handles repair for failed ones.
+suspended: false
+serviceAccount: clouddeploy-sa@${GCP_PROJECT_ID}.iam.gserviceaccount.com
+selector:
+  targets:
+  - id: "*"
+rules:
+- promoteReleaseRule:
+    id: "promote-release"
+    wait: 0m
+    destinationTargetId: "@next"
+- repairRolloutRule:
+    id: "rollback-release"
+    repairPhases:
+    - retry:
+        attempts: 2
+        wait: 0m
+        backoffMode: LINEAR
+    - rollback:
+        destinationPhase: stable

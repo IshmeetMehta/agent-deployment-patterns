@@ -1,0 +1,22 @@
+# Cloud Build configuration for Vertex AI Gen AI Evaluation
+# This file is used to run model and agent evaluations before deployment.
+
+steps:
+- name: 'python:3.10'
+  id: genai-evaluation
+  entrypoint: bash
+  args:
+  - -c
+  - |
+    # Install the Vertex AI SDK and evaluation requirements
+    pip install google-cloud-aiplatform pandas
+
+    # Run the evaluation script (e.g., eval_agent.py)
+    # The script should use Vertex AI Evaluation metrics like:
+    # - Grounding (to check if responses are based on provided context)
+    # - Safety (to check against policies)
+    # - Fluency / Coherence
+    python eval_agent.py --project=${GCP_PROJECT_ID} --location=${GCP_REGION}
+
+# Example evaluation results can be exported as artifacts or used to gate the build.
+# A failure in the evaluation script should return a non-zero exit code to block deployment.

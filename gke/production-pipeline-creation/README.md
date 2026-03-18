@@ -15,10 +15,11 @@ This repository is designed to be "AI-friendly." You can point an LLM (like Gemi
 
 **Sample Prompt for Gemini:**
 ```text
-I have created an agent and it's working fine local, using adk web, the agent is located inside the agent folder
-Now I want to deploy it on GKE, but I don't have the cluster and you also need to create it and the infra related
-Use the instructions.md as a main instructions and best practices
-Create everything, but do not execute, I want to check everything before run
+I have created an agent and it's working fine locally, using adk web, the agent is located inside the agent folder
+Now I want to deploy it on GKE, but I don't have the cluster and you need to create it and all the infra related
+Use the file below as a main instruction and best practices and consider other files inside the same repo
+https://github.com/IshmeetMehta/agent-deployment-patterns/blob/prod-pipeline/gke/production-pipeline-creation/instructions.md
+Create all files, scripts and manifests, but do not execute, I want to check everything before run
 ```
 
 *Note: You can point the AI to this specific branch/repo:*
@@ -26,12 +27,16 @@ Create everything, but do not execute, I want to check everything before run
 
 ## Repository Structure
 *   [instructions.md](./instructions.md): The foundational "Source of Truth" for deployment best practices and implementation steps.
-*   [templates/](./templates/): Parametrized manifests for Kubernetes, Cloud Build, Cloud Deploy, and Skaffold.
 *   [pipeline.md](./pipeline.md): A visual and technical architecture of the 3-stage (Infra, CI, CD) pipeline.
 *   [event-driven-cd.md](./event-driven-cd.md): Detailed guide for the asynchronous, Eventarc-driven deployment strategy.
 *   [manual.md](./manual.md): A step-by-step guide for developers who prefer to configure the pipeline manually.
-*   [prompt-to-generate-files.md](./prompt-to-generate-files.md): Detailed variable mapping and hydration logic for the templates.
-*   [next-steps.md](./next-steps.md): Roadmap for future enhancements, including Canary releases.
+*   [security.md](./security.md): Security guardrails and DevSecOps best practices for agents.
+*   [prompt-to-generate-files.md](./prompt-to-generate-files.md): Detailed variable mapping and hydration logic for the **GKE (Primary Target)** templates.
+*   [next-steps.md](./next-steps.md): Roadmap for future enhancements and platform expansions.
+*   [templates/](./templates/): **Production-Grade Templates**
+    *   **GKE (Primary Target):** Core manifests for GKE (Deployment, Service, KSA, etc.) are located in the root of this directory.
+    *   [cloudrun/](./templates/cloudrun/): Specialized templates and [prompt-to-generate-files-cloudrun.md](./templates/cloudrun/prompt-to-generate-files-cloudrun.md) for serverless deployments.
+    *   [agentengine/](./templates/agentengine/): Specialized templates and [prompt-to-generate-files-agentengine.md](./templates/agentengine/prompt-to-generate-files-agentengine.md) for Agent Engine lifecycle management.
 
 ## Key Features
 *   **Immutable Multi-Cluster Strategy:** Isolated `dev`, `qa`, and `prod` clusters ensure environment parity.

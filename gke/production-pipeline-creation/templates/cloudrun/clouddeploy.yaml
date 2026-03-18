@@ -1,0 +1,37 @@
+apiVersion: deploy.cloud.google.com/v1
+kind: DeliveryPipeline
+metadata:
+  name: ${APP_NAME}-run-pipeline
+spec:
+  description: Cloud Run delivery pipeline for ${APP_NAME}
+  serialPipeline:
+    stages:
+      - targetId: ${APP_NAME}-run-dev
+      - targetId: ${APP_NAME}-run-qa
+      - targetId: ${APP_NAME}-run-prod
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: ${APP_NAME}-run-dev
+spec:
+  run:
+    location: projects/${GCP_PROJECT_ID}/locations/${GCP_REGION}
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: ${APP_NAME}-run-qa
+spec:
+  requireApproval: true
+  run:
+    location: projects/${GCP_PROJECT_ID}/locations/${GCP_REGION}
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: ${APP_NAME}-run-prod
+spec:
+  requireApproval: true
+  run:
+    location: projects/${GCP_PROJECT_ID}/locations/${GCP_REGION}

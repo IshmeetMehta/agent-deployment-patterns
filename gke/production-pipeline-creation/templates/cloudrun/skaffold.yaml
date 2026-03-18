@@ -1,0 +1,12 @@
+apiVersion: skaffold/v4beta7
+kind: Config
+metadata:
+  name: ${APP_NAME}-run-skaffold
+build:
+  artifacts:
+  - image: ${APP_NAME}-image
+    context: agent
+    docker:
+      dockerfile: Dockerfile
+deploy:
+  cloudrun: {}

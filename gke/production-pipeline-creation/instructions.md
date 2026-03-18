@@ -11,7 +11,7 @@ ALWAYS request all information below to ensure we deploy to the correct location
 
 **User Input Questions:**
 1.  **Application Name:** (e.g., `my-agent`)
-2.  **Project ID:** (e.g., `jgamedemo`)
+2.  **Project ID:** (e.g., `my-project-123`)
 3.  **Region:** (e.g., `us-central1`)
 4.  **Cluster Prefix:** (The prefix for the 3 clusters: `-dev`, `-qa`, `-prod`)
 5.  **Infrastructure Tool:** (Do you want to use `gcloud` scripts or `Terraform`?)

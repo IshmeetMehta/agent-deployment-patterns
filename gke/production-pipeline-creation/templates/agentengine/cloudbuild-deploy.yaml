@@ -1,0 +1,9 @@
+steps:
+- name: 'python:3.10'
+  id: deploy-to-agent-engine
+  entrypoint: bash
+  args:
+  - -c
+  - |
+    pip install google-adk
+    python -m google.adk.cli deploy --name ${APP_NAME} --location ${GCP_REGION}
