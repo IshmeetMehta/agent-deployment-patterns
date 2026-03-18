@@ -1,0 +1,37 @@
+steps:
+  # Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: Build
+    args:
+      - 'build'
+      - '-t'
+      - '${_ARTIFACT_REGISTRY_LOCATION}-docker.pkg.dev/${_GCP_PROJECT_ID}/${_APP_NAME}-repo/${_APP_NAME}:${_VERSION}'
+      - '.'
+    dir: 'agent'
+  # Push the Docker image to Google Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: Push
+    args:
+      - 'push'
+      - '${_ARTIFACT_REGISTRY_LOCATION}-docker.pkg.dev/${_GCP_PROJECT_ID}/${_APP_NAME}-repo/${_APP_NAME}:${_VERSION}'
+  # Create a Cloud Deploy release
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: Deploy
+    entrypoint: gcloud
+    args:
+      - 'deploy'
+      - 'releases'
+      - 'create'
+      - '${_APP_NAME}-release-${BUILD_ID}'
+      - '--delivery-pipeline=${_APP_NAME}-pipeline'
+      - '--region=${_GCP_REGION}'
+      - '--skaffold-file=skaffold.yaml'
+      - '--images=my-agent-image=${_ARTIFACT_REGISTRY_LOCATION}-docker.pkg.dev/${_GCP_PROJECT_ID}/${_APP_NAME}-repo/${_APP_NAME}:${_VERSION}'
+      - '--description=Cloud Build triggered release for version ${_VERSION}'
+      - '--project=${_GCP_PROJECT_ID}'
+substitutions:
+  _APP_NAME: ''
+  _GCP_PROJECT_ID: ''
+  _GCP_REGION: ''
+  _ARTIFACT_REGISTRY_LOCATION: ''
+  _VERSION: ''

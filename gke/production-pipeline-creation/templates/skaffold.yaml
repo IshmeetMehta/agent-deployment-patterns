@@ -1,0 +1,32 @@
+apiVersion: skaffold/v4beta7
+kind: Config
+metadata:
+  name: ${APP_NAME}-skaffold
+build:
+  artifacts:
+  - image: my-agent-image
+    context: agent
+    docker:
+      dockerfile: Dockerfile
+manifests:
+  rawYaml:
+  - k8s-manifests/*.yaml
+deploy:
+  kubectl: {}
+verify:
+- name: verify-endpoint-test
+  container:
+    name: alpine
+    image: alpine
+    command: ["/bin/sh"]
+    args: ["-c", "wget ${APP_NAME}.${NAMESPACE_NAME}.svc.cluster.local"]
+  executionMode:
+    kubernetesCluster: {} # This runs the container in the target GKE cluster
+- name: verify-integration-test
+  container:
+    name: alpine-int
+    image: alpine
+    command: ["/bin/sh"]
+    args: ["-c", "wget ${APP_NAME}.${NAMESPACE_NAME}.svc.cluster.local"]
+  executionMode:
+    kubernetesCluster: {} # This runs the container in the target GKE cluster
