@@ -30,6 +30,7 @@ This document tracks the progress of advanced deployment patterns and features f
 *   **Progress:**
     - [x] Approved Idea
     - [x] Developed (Templates/Docs) - See [templates/eval-cloudbuild.yaml](./templates/eval-cloudbuild.yaml)
+    - [x] Developed Evaluation Script & Dataset - See [tests/eval_agent.py](./tests/eval_agent.py) and [tests/eval_dataset.jsonl](./tests/eval_dataset.jsonl)
     - [ ] Verified/Tested (User Only)
 
 
