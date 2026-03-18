@@ -21,8 +21,8 @@ This document outlines the variables used in the generated GKE deployment templa
 
 We use a **Multi-Cluster** strategy with **Immutable Manifests**. This means the same files in `/k8s-manifests` are used across all clusters.
 
-1.  **Shared Namespace:** The Kubernetes Namespace name is simply `${APP_NAME}` in all clusters (Dev, QA, Prod).
-2.  **Shared Identity:** The Kubernetes Service Account name is `${APP_NAME}-sa` in all clusters.
+1.  **Namespace Sameness:** The Kubernetes Namespace name is simply `${APP_NAME}` in all clusters (Dev, QA, Prod).
+2.  **Identity Sameness:** The Kubernetes Service Account name is `${APP_NAME}-sa` in all clusters.
 3.  **Cross-Cluster Promotion:** Google Cloud Deploy promotes the same container image and manifests across the 3 clusters, ensuring environment parity.
 
 ## Instructions for Manifest Generation:

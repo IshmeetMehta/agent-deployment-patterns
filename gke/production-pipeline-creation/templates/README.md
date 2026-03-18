@@ -7,8 +7,8 @@ This directory contains the base templates for deploying a GKE agent. These temp
 We use a **Production-Grade Multi-Cluster Strategy** where the same manifests are promoted across isolated clusters (Dev, QA, Prod). This ensures environment parity and simplifies the deployment lifecycle.
 
 ### Key Principles:
-1.  **Shared Namespace:** The Kubernetes Namespace is always `${APP_NAME}` in all clusters.
-2.  **Shared Identity:** The Kubernetes Service Account is always `${APP_NAME}-sa`.
+1.  **Namespace Sameness:** The Kubernetes Namespace is always `${APP_NAME}` in all clusters.
+2.  **Identity Sameness:** The Kubernetes Service Account is always `${APP_NAME}-sa`.
 3.  **Cross-Cluster Promotion:** Google Cloud Deploy manages the rollout of the same container image and manifests across the 3 clusters.
 
 ## Template Files:

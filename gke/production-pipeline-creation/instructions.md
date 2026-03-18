@@ -2,8 +2,15 @@
 
 ## Goal
 
-The intent of this file is to provide context for promoting an agent to production on GKE, following Google's best practices.
+The intent of this file is to provide the definitive context for promoting an agent to production on GKE, following Google's best practices.
 You will generate the manifests and infrastructure scripts (or Terraform) required for a production-grade CI/CD pipeline.
+
+## Reference Materials for AI-Native Generation
+
+To fulfill this request, you MUST use the following files as your primary source of truth:
+- **Variable Mapping & Hydration Logic:** Refer to [prompt-to-generate-files.md](./prompt-to-generate-files.md) for the exact variable names and hydration logic.
+- **Source Templates:** All base manifests and pipeline configurations are located in the [templates/](./templates/) directory.
+- **Architecture Reference:** See [pipeline.md](./pipeline.md) for a visual and technical overview of the deployment stages.
 
 ## Required Information from the User
 
@@ -20,12 +27,13 @@ ALWAYS request all information below to ensure we deploy to the correct location
 
 **RULE:** If the user does not confirm all inputs, ask again.
 
-## Deployment Strategy: Multi-Cluster (Standard)
+## Deployment Strategy: Production-Grade Multi-Cluster (Standard)
 
-We follow a **Production-Grade Multi-Cluster Strategy**. This ensures your deployment manifests are **immutable** and isolated.
+We follow a **Production-Grade Multi-Cluster Strategy** that leverages **Namespace Sameness** and **Identity Sameness**. This ensures your deployment manifests are **immutable** and isolated.
 -   **Environment Isolation:** 3 separate GKE Autopilot clusters (`${CLUSTER_NAME}-dev`, `${CLUSTER_NAME}-qa`, `${CLUSTER_NAME}-prod`).
--   **Single Namespace:** The agent is deployed into a namespace named `${APP_NAME}` in all three clusters.
--   **Manifest Immutability:** The same manifests in `/k8s-manifests` are promoted across environments by Google Cloud Deploy.
+-   **Namespace Sameness:** The agent is deployed into an identical namespace named `${APP_NAME}` in all three clusters.
+-   **Identity Sameness:** The agent uses an identical Kubernetes Service Account named `${APP_NAME}-sa` in all three clusters, bound to the same Google Service Account.
+-   **Manifest Immutability:** The exact same manifests in `/k8s-manifests` are promoted across environments by Google Cloud Deploy.
 
 ## Infrastructure Setup
 
