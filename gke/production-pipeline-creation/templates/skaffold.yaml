@@ -22,11 +22,19 @@ verify:
     args: ["-c", "wget ${APP_NAME}.${APP_NAME}.svc.cluster.local"]
   executionMode:
     kubernetesCluster: {} # This runs the container in the target GKE cluster
-- name: verify-integration-test
+- name: verify-genai-eval
   container:
-    name: alpine-int
-    image: alpine
+    name: python-eval
+    image: python:3.10-slim
     command: ["/bin/sh"]
-    args: ["-c", "wget ${APP_NAME}.${APP_NAME}.svc.cluster.local"]
+    args:
+    - "-c"
+    - |
+      apt-get update && apt-get install -y curl
+      mkdir -p tests
+      curl -L https://raw.githubusercontent.com/IshmeetMehta/agent-deployment-patterns/prod-pipeline/tests/eval_agent.py -o eval_agent.py
+      curl -L https://raw.githubusercontent.com/IshmeetMehta/agent-deployment-patterns/prod-pipeline/tests/eval_dataset.jsonl -o tests/eval_dataset.jsonl
+      pip install google-cloud-aiplatform requests pandas
+      python eval_agent.py --agent_url=http://${APP_NAME}.${APP_NAME}.svc.cluster.local --project=${GCP_PROJECT_ID} --location=${GCP_REGION}
   executionMode:
     kubernetesCluster: {} # This runs the container in the target GKE cluster

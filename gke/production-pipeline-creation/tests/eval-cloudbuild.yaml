@@ -9,14 +9,20 @@ steps:
   - -c
   - |
     # Install the Vertex AI SDK and evaluation requirements
-    pip install google-cloud-aiplatform pandas
+    pip install google-cloud-aiplatform requests pandas
 
-    # Run the evaluation script (e.g., eval_agent.py)
-    # The script should use Vertex AI Evaluation metrics like:
-    # - Grounding (to check if responses are based on provided context)
-    # - Safety (to check against policies)
-    # - Fluency / Coherence
-    python eval_agent.py --project=${GCP_PROJECT_ID} --location=${GCP_REGION}
+    # Run the evaluation script
+    # This script calls the agent at _AGENT_URL, collects responses,
+    # and evaluates them using Vertex AI Rapid Evaluation.
+    python tests/eval_agent.py \
+      --agent_url=${_AGENT_URL} \
+      --project=${_GCP_PROJECT_ID} \
+      --location=${_GCP_REGION}
+
+substitutions:
+  _AGENT_URL: 'http://my-agent.my-agent.svc.cluster.local'
+  _GCP_PROJECT_ID: 'my-project-123'
+  _GCP_REGION: 'us-central1'
 
 # Example evaluation results can be exported as artifacts or used to gate the build.
 # A failure in the evaluation script should return a non-zero exit code to block deployment.

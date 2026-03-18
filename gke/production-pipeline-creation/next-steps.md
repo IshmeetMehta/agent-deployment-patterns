@@ -29,8 +29,8 @@ This document tracks the progress of advanced deployment patterns and features f
 *   **Objective:** Integrate **Vertex AI Model Evaluation** and **Gen AI Evaluation** into the CI/CD pipeline.
 *   **Progress:**
     - [x] Approved Idea
-    - [x] Developed (Templates/Docs) - See [templates/eval-cloudbuild.yaml](./templates/eval-cloudbuild.yaml)
-    - [x] Developed Evaluation Script & Dataset - See [tests/eval_agent.py](./tests/eval_agent.py) and [tests/eval_dataset.jsonl](./tests/eval_dataset.jsonl)
+    - [x] Developed Evaluation Script & Dataset - See [tests/eval_agent.py](./tests/eval_agent.py)
+    - [x] Developed Automated Verification (Skaffold) - Fetching from GitHub Raw
     - [ ] Verified/Tested (User Only)
 
 
